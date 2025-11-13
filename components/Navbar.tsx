@@ -32,7 +32,7 @@ const Navbar = () => {
       {/* For Phone Screens */}
       {!loading && (
         <div className='flex lg:hidden items-center gap-2 sm:gap-5 text-gray-500'>
-          <Link href="/"><button className='bg-primary text-white px-5 py-2 rounded-full cursor-pointer'>Home</button></Link>
+          <Link href="/"><Image src={assets.homeIcon} alt="Home" className='w-28 cursor-pointer'/></Link>
         </div>
       )}
     </div>
