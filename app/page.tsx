@@ -6,7 +6,7 @@ export default function Home() {
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden group/design-root">
       <Navbar />
-      <div className="grow">
+      <div className="grow bg-linear-to-b from-[#FDF9E9]">
         <ProductsSection />
       </div>
       <Footer />

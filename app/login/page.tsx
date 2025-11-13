@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import Navbar from "@/components/Navbar";
 
 const Login = () => {
     const [email, setEmail] = useState("");
@@ -62,7 +63,8 @@ const Login = () => {
         }
     };
   return (
-    <div className='flex items-center justify-center min-h-screen px-6 sm:px-0 bg-linear-to-b from-cyan-100 w-full'>
+    <div className='flex items-center justify-center min-h-screen px-6 sm:px-0 bg-linear-to-b from-[#FDF9E9] w-full'>
+      <Navbar />
       <div className='bg-slate-900 p-10 rounded-lg shadow-lg w-full sm:w-96 text-indigo-300 text-sm'>
         <h2 className='text-3xl font-semibold text-white text-center mb-3'>Login</h2>
         <p className='text-center text-sm mb-6'>Login to your account!</p>
@@ -75,7 +77,7 @@ const Login = () => {
             <input onChange={e => setPassword(e.target.value)} value={password} className='bg-transparent outline-none' type="password" placeholder='Password' required/>
           </div>
 
-          <button className='w-full py-2.5 rounded-full bg-linear-to-r from-blue-700 to-blue-600 text-white font-medium cursor-pointer'>{loading ? "Signing In..." : "Sign In"}</button>
+          <button className='w-full py-2.5 rounded-full bg-linear-to-r from-primary to-primary/50 text-white font-medium cursor-pointer'>{loading ? "Signing In..." : "Sign In"}</button>
           {error && <p className="text-red-500 mt-3">{error}</p>}
         </form>
       </div>

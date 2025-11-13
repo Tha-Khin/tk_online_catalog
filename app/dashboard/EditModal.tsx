@@ -136,7 +136,7 @@ export default function EditModal({ product, close, onUpdateSuccess }: EditModal
                                     <button 
                                         type="button" 
                                         onClick={() => open()} 
-                                        className="w-24 h-24 border-2 border-dashed border-gray-400 rounded flex items-center justify-center text-gray-600 hover:border-primary transition cursor-pointer"
+                                        className="w-24 h-24 border-2 border-dashed border-gray-400 rounded flex items-center justify-center text-gray-600 hover:border-primary hover:text-primary hover:bg-primary/10 transition cursor-pointer"
                                     >
                                         + Upload
                                     </button>
