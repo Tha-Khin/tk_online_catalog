@@ -16,6 +16,7 @@ const Navbar = () => {
       </Link>
       {!loading && (
         <div className='hidden md:flex items-center gap-5 text-gray-500'>
+          <Link href="/">Home</Link>
           {user ? (
             <>
               <Link href="/dashboard">Dashboard</Link>

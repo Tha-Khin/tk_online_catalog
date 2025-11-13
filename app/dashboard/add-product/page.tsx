@@ -113,10 +113,9 @@ export default function AddProduct() {
             setLoading(false);
         }
     };
-
     return (
-        <div className="py-10">
-            <h1>Add Product</h1>
+        <div className="p-10">
+            <h1 className="text-3xl font-bold text-black">Add Product</h1>
             <form onSubmit={addProduct} className="mt-5">
                 {/* --- IMAGE DISPLAY AND UPLOAD SECTION --- */}
                 <label className="text-base font-medium block">Product Images (Maximum 5 images)</label>
