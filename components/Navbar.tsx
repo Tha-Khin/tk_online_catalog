@@ -15,7 +15,7 @@ const Navbar = () => {
         <Image src={assets.logo} alt="Logo" className='w-28 lg:w-32 cursor-pointer' priority/>
       </Link>
       {!loading && (
-        <div className='hidden md:flex items-center gap-5 text-gray-500'>
+        <div className='hidden lg:flex items-center gap-5 text-gray-500'>
           <Link href="/">Home</Link>
           {user ? (
             <>
@@ -31,16 +31,8 @@ const Navbar = () => {
       )}
       {/* For Phone Screens */}
       {!loading && (
-        <div className='md:hidden flex items-center gap-2 sm:gap-5 text-gray-500'>
-          {user ? (
-            <>
-              <button onClick={async () => { await logout(); toast.success("Logged out successfully!"); }} disabled={loading} className='bg-primary text-black px-5 py-2 rounded-full cursor-pointer'>Logout</button>
-            </>
-            ) : (
-            <>
-              <Link href="/login"><button className='bg-primary text-black px-5 py-2 rounded-full cursor-pointer'>Login</button></Link>
-            </>
-          )}
+        <div className='flex lg:hidden items-center gap-2 sm:gap-5 text-gray-500'>
+          <Link href="/"><button className='bg-primary text-white px-5 py-2 rounded-full cursor-pointer'>Home</button></Link>
         </div>
       )}
     </div>
