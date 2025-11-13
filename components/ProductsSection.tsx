@@ -47,7 +47,7 @@ const ProductsSection = () => {
       </div>
       {currentProducts.length === 0 && (
         <div className='text-center text-gray-500 my-10'>
-          <p className='text-lg'>No products found in this category or for your search term.</p>
+          <p className='text-lg'>No products found!</p>
         </div>
       )}
       {/* --- PAGINATION CONTROLS --- */}
