@@ -31,8 +31,8 @@ export default function DashboardPage() {
     const toggleMutation = useMutation({
         mutationFn: toggleIsActive,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['products'] });
             toast.success("Active status updated successfully.");
+            queryClient.invalidateQueries({ queryKey: ['products'] });
         },
         onError: () => {
             toast.error("Failed to update active status.");

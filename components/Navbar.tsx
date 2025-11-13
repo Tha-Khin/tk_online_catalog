@@ -12,7 +12,7 @@ const Navbar = () => {
   return (
     <div className={`fixed top-0 left-0 z-50 w-full flex items-center justify-between px-4 sm:px-10 md:px-14 lg:px-36 border-b border-gray-500 py-4 bg-white`}>
       <Link href="/">
-        <Image src={assets.logo} alt="Logo" className='w-28 lg:w-32 cursor-pointer'/>
+        <Image src={assets.logo} alt="Logo" className='w-28 lg:w-32 cursor-pointer' priority/>
       </Link>
       {!loading && (
         <div className='hidden md:flex items-center gap-5 text-gray-500'>

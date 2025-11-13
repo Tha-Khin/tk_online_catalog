@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import ToastProvider from "@/components/ToastProvider";
+import Providers from "./providers";
 
 export const metadata: Metadata = {
   title: "TK Online Catalog",
@@ -20,7 +21,9 @@ export default function RootLayout({
       </head>
       <body className={`antialiased`}>
         <AuthProvider>
-          {children}
+          <Providers>
+            {children}
+          </Providers>
           <ToastProvider />
         </AuthProvider>
       </body>

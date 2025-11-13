@@ -2,7 +2,6 @@ import DashboardSidebar from './DashboardSidebar';
 import Footer from '@/components/Footer';
 import Navbar from '@/components/Navbar';
 import { ReactNode } from 'react';
-import Providers from '../providers';
 import AuthGuard from '@/components/AuthGuard';
 
 interface DashboardLayoutProps {
@@ -18,9 +17,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <DashboardSidebar />        
           <main className="w-full mx-auto px-4 sm:px-6 lg:px-8 pt-20">
             {/* This area renders the content of the nested route */}
-            <Providers>
-              {children}
-            </Providers>
+            {children}
           </main>
         </div>
         <Footer />

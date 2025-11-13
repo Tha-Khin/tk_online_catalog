@@ -23,7 +23,7 @@ const ProductDetail = ({id}: ProductIdProps) => {
         <div className="grow lg:w-2/3">
             {/* Product Gallary */}
             <div className="flex flex-col gap-4">
-                <Image className="w-full rounded-xl" alt='product-image' src={activeImage} width={1000} height={600} loading="eager"/>
+                <Image className="w-full rounded-xl" alt='product-image' src={activeImage} width={1000} height={600} priority/>
                 <div className="grid grid-cols-5 gap-3">
                     {product.imageUrls.map((image, index) => <Image onClick={() => setSelectedImage(image)} src={image} key={index} alt={`product-image-${index}`} width={250} height={150} className="w-full rounded-lg border-2 border-primary cursor-pointer"/>)}
                 </div>

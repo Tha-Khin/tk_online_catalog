@@ -82,7 +82,7 @@ export const toggleIsActive = async (productId: string) => {
   }
   const currentStatus = snapshot.data().isActive ?? false;
   await updateDoc(productRef, {
-      isActive: !currentStatus,
+    isActive: !currentStatus,
   });
   return !currentStatus;
 };
