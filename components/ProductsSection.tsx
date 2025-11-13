@@ -54,7 +54,7 @@ const ProductsSection = () => {
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-4 mt-8">          
           {/* Previous Button */}
-          <button onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} disabled={currentPage === 1} className={`px-4 py-2 border rounded-lg transition ${currentPage === 1 ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-white hover:bg-gray-50 border-primary cursor-pointer'}`}>Previous</button>
+          <button onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} disabled={currentPage === 1} className={`hidden md:flex px-4 py-2 border rounded-lg transition ${currentPage === 1 ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-white hover:bg-gray-50 border-primary cursor-pointer'}`}>Previous</button>
           {/* Page Number Buttons */}
           <div className="flex items-center gap-2">
             {/* Create an array from 1 to totalPages */}
@@ -66,7 +66,7 @@ const ProductsSection = () => {
             })}
           </div>          
           {/* Next Button */}
-          <button onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))} disabled={currentPage === totalPages} className={`px-4 py-2 border rounded-lg transition ${currentPage === totalPages ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-white hover:bg-gray-50 border-primary cursor-pointer'}`}>Next</button>          
+          <button onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))} disabled={currentPage === totalPages} className={`hidden md:flex px-4 py-2 border rounded-lg transition ${currentPage === totalPages ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-white hover:bg-gray-50 border-primary cursor-pointer'}`}>Next</button>          
         </div>
       )}
     </div>
