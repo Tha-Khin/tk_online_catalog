@@ -15,7 +15,7 @@ const Navbar = () => {
         <Image src={assets.logo} alt="Logo" className='w-28 lg:w-32 cursor-pointer' priority/>
       </Link>
       {!loading && (
-        <div className='hidden lg:flex items-center gap-5 text-gray-500'>
+        <div className='hidden lg:flex items-center gap-5 text-gray-800'>
           <Link href="/">Home</Link>
           {user ? (
             <>
