@@ -16,7 +16,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="flex grow">
           <DashboardSidebar />        
           <main className="w-full mx-auto px-4 sm:px-6 lg:px-8 pt-20 bg-linear-to-b from-[#FDF9E9]">
-            {/* This area renders the content of the nested route */}
             {children}
           </main>
         </div>

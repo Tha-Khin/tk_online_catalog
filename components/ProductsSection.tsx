@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import ProductCard from './ProductCard'
-import { useProducts } from '@/hooks/useProducts';
+import { useProducts } from '@/libs/useProducts';
 import Image from 'next/image';
 import { assets } from '@/assets/assets';
 
@@ -47,7 +47,7 @@ const ProductsSection = () => {
       </div>
       {currentProducts.length === 0 && (
         <div className='text-center text-gray-500 my-10'>
-          <p className='text-lg'>No products found!</p>
+          <p className='text-lg'>No product found!</p>
         </div>
       )}
       {/* --- PAGINATION CONTROLS --- */}

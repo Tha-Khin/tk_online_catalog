@@ -1,5 +1,5 @@
 'use client';
-import { useProductDetail, useRelatedProducts } from "@/hooks/useProducts";
+import { useProductDetail, useRelatedProducts } from "@/libs/useProducts";
 import { ProductIdProps } from "@/types"
 import Image from "next/image";
 import Link from "next/link";

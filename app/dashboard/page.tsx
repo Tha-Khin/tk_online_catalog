@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { useState } from "react";
-import { toggleIsActive, useProducts } from '@/hooks/useProducts';
+import { toggleIsActive, useProducts } from '@/libs/useProducts';
 import Image from "next/image";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import EditModal from "./EditModal";
@@ -17,7 +17,8 @@ export default function DashboardPage() {
     const { data, isLoading, isError, error } = useProducts();
     const queryClient = useQueryClient();
     const [productToEdit, setProductToEdit] = useState<Product | null>(null);
-    const [targetProduct, setTargetProduct] = useState<Product | null>(null);
+    const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+    const [deleteLoading, setDeleteLoading] = useState(false);
     
     const [currentPage, setCurrentPage] = useState(1);
     const PRODUCTS_PER_PAGE = 10;
@@ -44,17 +45,38 @@ export default function DashboardPage() {
         toast.success("Product updated successfully.");
     };
 
-    const handleConfirmDelete = async () => {
-        if (!targetProduct) return;
-        try {
-            await deleteDoc(doc(db, "products", targetProduct.id));
+    const deleteProduct = async (productToDelete: Product) => {
+        setDeleteLoading(true);
+        if (productToDelete.imageUrls && productToDelete.imageUrls.length > 0) {
+            const res = await fetch('/api/cloudinary-delete-batch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ urls: productToDelete.imageUrls }),
+            });            
+            if (!res.ok) {
+                setDeleteLoading(false);
+                throw new Error('Failed to delete images from Cloudinary.');
+            }
+        }
+        await deleteDoc(doc(db, "products", productToDelete.id));
+        setDeleteLoading(false);
+        setProductToDelete(null);
+    };
+
+    const deleteProductMutation = useMutation({
+        mutationFn: deleteProduct,
+        onSuccess: () => {
             toast.success("Product deleted successfully.");
             queryClient.invalidateQueries({ queryKey: ['products'] });
-            setTargetProduct(null);
-        } catch (error) {
-            console.error(error);
-            toast.error("Failed to delete product.");
-        }
+        },
+        onError: (error) => {
+            toast.error(error.message || "Failed to delete product.");
+        },
+    });
+
+    const handleConfirmDelete = () => {
+        if (!productToDelete) return;
+        deleteProductMutation.mutate(productToDelete);
     };
 
     if (isLoading) return <div>Loading products...</div>;
@@ -99,7 +121,7 @@ export default function DashboardPage() {
                                     </td>
                                     <td className="px-4 py-3">
                                         <span onClick={() => setProductToEdit(product)} className="text-blue-600 font-semibold cursor-pointer mr-2">Edit</span>|
-                                        <span onClick={() => setTargetProduct(product)} className="text-red-500 font-semibold cursor-pointer ml-2">Delete</span>
+                                        <span onClick={() => setProductToDelete(product)} className="text-red-500 font-semibold cursor-pointer ml-2">Delete</span>
                                     </td>
                                 </tr>
                             ))}
@@ -129,8 +151,8 @@ export default function DashboardPage() {
             {productToEdit && (
                 <EditModal product={productToEdit} close={() => setProductToEdit(null)} onUpdateSuccess={onUpdateSuccess}/>
             )}
-            {targetProduct && (
-                <ConfirmModal targetProduct={targetProduct} onConfirm={handleConfirmDelete} onCancel={() => setTargetProduct(null)}
+            {productToDelete && (
+                <ConfirmModal targetProduct={productToDelete} onConfirm={handleConfirmDelete} onCancel={() => setProductToDelete(null)} deleteLoading={deleteLoading}
                 />
             )}
         </div>

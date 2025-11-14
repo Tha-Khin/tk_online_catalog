@@ -3,11 +3,11 @@
 import { assets } from "@/assets/assets";
 import { db } from "@/firebase/firebase";
 import { Product } from "@/types";
-import { doc, getDoc, updateDoc, arrayRemove } from "firebase/firestore";
-import { CldUploadWidget, CloudinaryUploadWidgetInfo, CloudinaryUploadWidgetResults } from "next-cloudinary";
-import Image from "next/image";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import { uploadFiles } from "@/libs/uploadFiles";
+import EditImageUploader from "@/components/EditImageUploader";
 
 interface EditModalProps {
     product: Product;
@@ -18,9 +18,13 @@ interface EditModalProps {
 export default function EditModal({ product, close, onUpdateSuccess }: EditModalProps) {    
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState<Product>(product);
+    const [files, setFiles] = useState<File[]>([]);
+    const [prevImages, setPrevImages] = useState<string[]>(product.imageUrls || []);
+    const [urlsToDelete, setUrlsToDelete] = useState<string[]>([]);
 
     useEffect(() => {
         setFormData(product);
+        setPrevImages(product.imageUrls || []);
     }, [product]);
 
     const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -31,71 +35,53 @@ export default function EditModal({ product, close, onUpdateSuccess }: EditModal
         }));
     };
 
-    const handleUploadSuccess = (result: CloudinaryUploadWidgetResults) => {
-        if (result.event === 'success') {
-            const info = result.info as CloudinaryUploadWidgetInfo;
-            if (info.secure_url) {
-                const newUrl = info.secure_url;
-                setFormData(prevData => {
-                    if (prevData.imageUrls.length < 5) {
-                        return { ...prevData, imageUrls: [...prevData.imageUrls, newUrl] };
-                    }
-                    return prevData;
-                });
-            }
-        }
-    };
-
     const deleteImage = async (urlToDelete: string) => {
         if (!formData.id) {
             console.error("Cannot delete image: Product ID is missing.");
             return;
         }
-        setLoading(true);
-        try {
-            const response = await fetch('/api/cloudinary-delete', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url: urlToDelete }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to delete image on server.');
-            }
-
-            const productRef = doc(db, "products", formData.id);
-            await updateDoc(productRef, {
-                imageUrls: arrayRemove(urlToDelete),
-            });
-
-            setFormData(prevData => ({
-                ...prevData,
-                imageUrls: prevData.imageUrls.filter(url => url !== urlToDelete),
-            }));
-        } catch (error) {
-            console.error("Deletion failed:", error);
-        } finally {
-            setLoading(false);
-        }
+        setPrevImages(prev => prev.filter(url => url !== urlToDelete));
+        setUrlsToDelete(prev => [...prev, urlToDelete]);
+        setFormData(prevData => ({
+            ...prevData,
+            imageUrls: prevData.imageUrls.filter(url => url !== urlToDelete),
+        }));
     };
 
     const editProduct = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        if (formData.imageUrls.length === 0) {
+        const totalImageCount = prevImages.length + files.length;
+        if (totalImageCount === 0 && (formData.imageUrls?.length ?? 0) === 0) {
             toast.error("Please upload at least one product image.");
             return;
         }
 
         setLoading(true);
         try {
+            if (urlsToDelete.length > 0) {
+                const res = await fetch('/api/cloudinary-delete-batch', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ urls: urlsToDelete }),
+                });
+                
+                if (!res.ok) {
+                    throw new Error('Failed to delete images from Cloudinary.');
+                }
+            }
+            const uploadedUrls = await uploadFiles(files);
+            const allUrls = [...prevImages, ...uploadedUrls];
+            const payload: Omit<Product, "id"> = {
+                ...formData,
+                imageUrls: allUrls,
+            };
             const productRef = doc(db, "products", product.id);
             const snapshot = await getDoc(productRef);
             if (!snapshot.exists()) {
                 throw new Error("Product not found");
             }
-            const { id, ...dataToUpdate } = formData;
-            await updateDoc(productRef, dataToUpdate);             
+            await updateDoc(productRef, payload);         
             setLoading(false);
             onUpdateSuccess();
             close();
@@ -112,53 +98,15 @@ export default function EditModal({ product, close, onUpdateSuccess }: EditModal
                 <h1 className="text-2xl font-bold">Edit Product: {product.title}</h1>
                 
                 <form onSubmit={editProduct} className="mt-5 space-y-4">
-
-                    {/* --- IMAGE DISPLAY AND UPLOAD SECTION --- */}
-                    <label className="text-base font-medium block">Product Images (Maximum 5 images)</label>
-                    <div className="flex flex-wrap gap-4 items-end">
-                        
-                        {/* 3. Display existing and newly uploaded images */}
-                        {formData.imageUrls.map((imageUrl) => (
-                            <div key={imageUrl} className="relative w-24 h-24 border border-gray-300 rounded overflow-hidden">
-                                <Image src={imageUrl} alt='Product' layout="fill" objectFit="cover" />
-                                <button type="button"  disabled={loading} onClick={() => deleteImage(imageUrl)} className={`absolute top-0 right-0 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-80 hover:opacity-100 transition ${loading ? 'cursor-not-allowed' : 'cursor-pointer'}`}>✕</button>
-                            </div>
-                        ))}
-
-                        {/* 4. Single Upload Widget */}
-                        {formData.imageUrls.length < 5 && (
-                             <CldUploadWidget 
-                                options={{multiple: false, maxFiles: 1, clientAllowedFormats: ["jpg", "png", "jpeg", "webp"], maxImageFileSize: 1000000}} 
-                                uploadPreset="tk-online-catalog" 
-                                onSuccess={handleUploadSuccess} 
-                            >
-                                {({ open }) => (
-                                    <button 
-                                        type="button" 
-                                        onClick={() => open()} 
-                                        className="w-24 h-24 border-2 border-dashed border-gray-400 rounded flex items-center justify-center text-gray-600 hover:border-primary hover:text-primary hover:bg-primary/10 transition cursor-pointer"
-                                    >
-                                        + Upload
-                                    </button>
-                                )}
-                            </CldUploadWidget>
-                        )}
-                    </div>
-                    {/* --- END IMAGE SECTION --- */}
-
-                    {/* Product Name */}
+                    <EditImageUploader files={files} setFiles={setFiles} max={5} deleteImage={deleteImage} prevImages={prevImages}/>
                     <div className="flex flex-col gap-1 max-w-md">
                         <label className="text-base font-medium" htmlFor="product-name">Product Name</label>
                         <input name="title" id="product-name" type="text" value={formData.title} onChange={handleFormChange} placeholder="Type here" className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40" required />
                     </div>
-
-                    {/* Product Description */}
                     <div className="flex flex-col gap-1 max-w-md">
                         <label className="text-base font-medium" htmlFor="product-description">Product Description</label>
                         <textarea name="description" id="product-description" value={formData.description} onChange={handleFormChange} rows={4} className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40 resize-none" placeholder="Type here"></textarea>
                     </div>
-
-                    {/* Category */}
                     <div className="flex flex-col gap-1 max-w-md">
                         <label className="text-base font-medium" htmlFor="category">Category</label>
                         <select name="category" id="category" value={formData.category} onChange={handleFormChange} className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40">
@@ -168,14 +116,11 @@ export default function EditModal({ product, close, onUpdateSuccess }: EditModal
                             ))}
                         </select>
                     </div>
-
-                    {/* Price */}
                     <div className="flex flex-col gap-1 max-w-md">
                         <label className="text-base font-medium" htmlFor="product-price">Price</label>
                         <input name="price" id="product-price" value={formData.price} onChange={handleFormChange} type="number" className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40 resize-none" placeholder="Type here" required/>
                     </div>
                     
-                    {/* Submission Button */}
                     <button className="px-8 py-1.5 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition cursor-pointer mt-4 disabled:bg-gray-400" type="submit" disabled={loading}>
                         {loading ? "Saving..." : "Save Changes"}
                     </button>

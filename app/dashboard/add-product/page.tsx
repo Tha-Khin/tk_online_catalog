@@ -1,14 +1,16 @@
-"use client"
-import { assets } from "@/assets/assets";
-import { db } from "@/firebase/firebase";
+"use client";
+
+import ImageUploader from "@/components/ImageUploader";
+import { uploadFiles } from "@/libs/uploadFiles";
 import { Product } from "@/types";
+import { db } from "@/firebase/firebase";
 import { addDoc, collection } from "firebase/firestore";
-import { CldUploadWidget, CloudinaryUploadWidgetResults, CloudinaryUploadWidgetInfo } from "next-cloudinary";
-import Image from "next/image";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "react-toastify";
+import { assets } from "@/assets/assets";
 
-const initialState: Omit<Product, 'id'> = {
+const initialState: Omit<Product, "id"> = {
     title: "",
     description: "",
     category: "",
@@ -18,165 +20,107 @@ const initialState: Omit<Product, 'id'> = {
 };
 
 export default function AddProduct() {
+    const [formData, setFormData] = useState(initialState);
+    const [files, setFiles] = useState<File[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [formData, setFormData] = useState(initialState);
 
-    const handleUploadSuccess = (result: CloudinaryUploadWidgetResults) => {
-        if (result.event === 'success') {
-            if (typeof result.info === 'object' && result.info !== null) {
-                const info = result.info as CloudinaryUploadWidgetInfo;
-                if (info.secure_url) {
-                    const newUrl = info.secure_url;
-                    setFormData(prevData => {
-                        if (prevData.imageUrls.length < 5) {
-                            return { ...prevData, imageUrls: [...prevData.imageUrls, newUrl] };
-                        }
-                        return prevData;
-                    });
-                }
-            }
+    const queryClient = useQueryClient();
+
+    async function addProduct(data: Omit<Product, "id">) {
+        await addDoc(collection(db, "products"), data);
+    }
+
+    const mutation = useMutation({
+        mutationFn: addProduct,
+        onSuccess: () => {
+            toast.success("Product added successfully!");
+            queryClient.invalidateQueries({ queryKey: ["products"] });
+
+            setFormData(initialState);
+            setFiles([]);
+            setLoading(false);
+        },
+        onError: () => {
+            toast.error("Failed to add product");
+            setLoading(false);
+        },
+    });
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError(null);
+
+        if (files.length === 0) {
+            return setError("Please upload at least 1 image.");
         }
-    };
 
-    const deleteImage = async (urlToDelete: string) => {
+        if (!formData.title.trim() || !formData.description.trim() || !formData.category.trim()) {
+            return setError("All form fields are required.");
+        }
+
         setLoading(true);
+
         try {
-            const response = await fetch('/api/cloudinary-delete', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url: urlToDelete }),
-            });
+            const uploadedUrls = await uploadFiles(files);
 
-            if (!response.ok) {
-                throw new Error('Failed to delete image on server.');
-            }
+            const payload: Omit<Product, "id"> = {
+                ...formData,
+                imageUrls: uploadedUrls,
+            };
 
-            setFormData(prevData => ({
-                ...prevData,
-                imageUrls: prevData.imageUrls.filter(url => url !== urlToDelete),
-            }));
-        } catch (error) {
-            toast.error("Failed to delete image: " + error);
-        } finally {
+            mutation.mutate(payload);
+        } catch (err) {
+            console.error(err);
+            toast.error("Image upload failed.");
             setLoading(false);
         }
     };
 
-    const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const { name, value, type } = e.target;
-        
+    const handleChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    ) => {
+        const { name, value } = e.target;
         setFormData(prevData => ({
             ...prevData,
-            [name]: type === 'number' ? Number(value) : value,
+            [name]: name === 'price' ? Number(value) : value,
         }));
     };
 
-    const addProduct = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        setError(null);
-        if (formData.imageUrls.length === 0) {
-            setError("Please upload at least one product image.");
-            return;
-        }
-        if (!formData.title) {
-            setError("Product name is required.");
-            return;
-        }
-        if (!formData.category) {
-            setError("Please select a category.");
-            return;
-        }
-        if (formData.price <= 0 || isNaN(formData.price)) {
-            setError("Please enter a valid price greater than 0.");
-            return;
-        }
-        setLoading(true);
-        
-        try {
-            if (!db) {
-                throw new Error("Firebase database is not initialized.");
-            }
-            
-            await addDoc(collection(db, "products"), formData);
-
-            toast.success("Product added successfully.");
-            setFormData(initialState);
-        } catch (err) {
-            toast.error("Failed to add product.");
-            if (err instanceof Error) {
-                setError(err.message);
-            } else {
-                setError("An unknown error occurred. Please try again.");
-            }
-        } finally {
-            setLoading(false);
-        }
-    };
     return (
         <div className="p-10">
             <h1 className="text-3xl font-bold text-black">Add Product</h1>
-            <form onSubmit={addProduct} className="mt-5">
-                {/* --- IMAGE DISPLAY AND UPLOAD SECTION --- */}
-                <label className="text-base font-medium block">Product Images (Maximum 5 images)</label>
-                <div className="flex flex-wrap gap-4 items-end mt-2.5">
-                    
-                    {/* Display existing and newly uploaded images */}
-                    {formData.imageUrls.length > 0 && formData.imageUrls.map((imageUrl) => (
-                        <div key={imageUrl} className="relative w-24 h-24 border border-gray-300 rounded overflow-hidden">
-                            <Image src={imageUrl} alt='Product' layout="fill" objectFit="cover" />
-                            <button type="button" onClick={() => deleteImage(imageUrl)} className="absolute top-0 right-0 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-80 hover:opacity-100 transition cursor-pointer">✕</button>
-                        </div>
-                    ))}
 
-                    {/* Single Upload Widget */}
-                    {formData.imageUrls.length < 5 && (
-                        <CldUploadWidget 
-                            options={{multiple: false, maxFiles: 1, clientAllowedFormats: ["jpg", "png", "jpeg", "webp"], maxImageFileSize: 1000000}} 
-                            uploadPreset="tk-online-catalog" 
-                            onSuccess={handleUploadSuccess}>
-                            {({ open }) => (
-                                <button 
-                                    type="button" 
-                                    onClick={() => open()} 
-                                    className="w-24 h-24 border-2 border-dashed border-gray-400 rounded flex items-center justify-center text-gray-600 hover:border-primary hover:text-primary hover:bg-primary/10 transition cursor-pointer"
-                                >
-                                    + Upload
-                                </button>
-                            )}
-                        </CldUploadWidget>
-                    )}
-                </div>
-                {/* --- END IMAGE SECTION --- */}
-
+            <form onSubmit={handleSubmit} className="mt-5">
+                <ImageUploader files={files} setFiles={setFiles} max={5} />
                 <div className="flex flex-col gap-1 max-w-md mt-4">
-                    <label className="text-base font-medium" htmlFor="product-name">Product Name</label>
-                    <input value={formData.title} onChange={handleFormChange} name="title" id="product-name" type="text" placeholder="Type here" className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40" required />
+                    <label className="text-base font-medium">Product Name</label>
+                    <input name="title" value={formData.title} onChange={handleChange} className="border px-3 py-2 rounded" placeholder="Enter product name" required/>
                 </div>
                 <div className="flex flex-col gap-1 max-w-md mt-4">
-                    <label className="text-base font-medium" htmlFor="product-description">Product Description</label>
-                    <textarea value={formData.description} onChange={handleFormChange} name="description" id="product-description" rows={4} className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40 resize-none" placeholder="Type here"></textarea>
+                    <label className="text-base font-medium">Description</label>
+                    <textarea name="description" value={formData.description} onChange={handleChange} rows={4} required className="border px-3 py-2 rounded resize-none"/>
                 </div>
                 <div className="flex flex-col gap-1 max-w-md mt-4">
-                    <label className="text-base font-medium" htmlFor="category">Category</label>
-                    <select value={formData.category} onChange={handleFormChange} name="category" id="category" className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40">
+                    <label className="text-base font-medium">Category</label>
+                    <select name="category" value={formData.category} onChange={handleChange} className="border px-3 py-2 rounded" required>
                         <option value="">Select Category</option>
-                        {assets.categories.map((category, index)=>(
-                            <option key={index} value={category}>{category}</option>
+                        {assets.categories.map((c, i) => (
+                            <option key={i} value={c}>
+                                {c}
+                            </option>
                         ))}
                     </select>
                 </div>
                 <div className="flex flex-col gap-1 max-w-md mt-4">
-                    <label className="text-base font-medium" htmlFor="product-price">Price</label>
-                    <input value={formData.price} onChange={handleFormChange} name="price" id="product-price" type="number" className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40 resize-none" placeholder="Type here" required></input>
+                    <label className="text-base font-medium">Price</label>
+                    <input type="number" name="price" value={formData.price} onChange={handleChange} required className="border px-3 py-2 rounded"/>
                 </div>
-                
-                {/* Disable button while loading */}
-                <button className="px-8 py-1.5 bg-primary text-white font-medium rounded cursor-pointer mt-4" type="submit" disabled={loading}>
+
+                <button type="submit" disabled={loading} className="bg-primary text-white px-8 py-2 rounded mt-4">
                     {loading ? "Adding..." : "ADD"}
                 </button>
 
-                {/* Feedback messages */}
                 {error && <p className="text-red-500 mt-2">{error}</p>}
             </form>
         </div>
