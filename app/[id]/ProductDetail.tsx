@@ -23,9 +23,15 @@ const ProductDetail = ({id}: ProductIdProps) => {
         <div className="grow lg:w-2/3">
             {/* Product Gallary */}
             <div className="flex flex-col gap-4">
-                <Image className="w-full rounded-xl" alt='product-image' src={activeImage} width={1000} height={600} priority/>
+                <div className="relative aspect-3/2 overflow-hidden">
+                    <Image className="w-full rounded-xl object-cover" alt='product-image' src={activeImage} fill sizes="600px" priority/>
+                </div>
                 <div className="grid grid-cols-5 gap-3">
-                    {product.imageUrls.map((image, index) => <Image onClick={() => setSelectedImage(image)} src={image} key={index} alt={`product-image-${index}`} width={250} height={150} className="w-full rounded-lg border-2 border-primary cursor-pointer"/>)}
+                    {product.imageUrls.map((image, index) => (
+                        <div key={index} className="relative aspect-3/2 overflow-hidden">
+                            <Image onClick={() => setSelectedImage(image)} src={image} alt={`product-image-${index}`} fill sizes="600px" className="w-full rounded-lg border-2 border-primary object-cover cursor-pointer"/>
+                        </div>
+                    ))}
                 </div>
             </div>
             {/* Product Info */}
@@ -61,7 +67,9 @@ const ProductDetail = ({id}: ProductIdProps) => {
                         <p className="text-sm text-[#898361]">No related products found.</p> 
                         :
                         relatedProducts?.map((rProduct, index) => (<Link href={`/${rProduct.id}`} className="flex items-center gap-4" key={index}>
-                            <Image src={rProduct.imageUrls[0]} alt={`related-product-image-${index}`} width={250} height={150} className="w-25 h-15 rounded-md shrink-0"/>
+                            <div className="relative aspect-3/2 w-32 rounded-md">
+                                <Image src={rProduct.imageUrls[0]} alt={`related-product-image-${index}`} fill sizes="600px" className="rounded-md object-cover"/>
+                            </div>
                             <div>
                                 <h4 className="font-bold text-sm text-[#181711]">{rProduct.title}</h4>
                                 <p className="text-sm text-[#898361]">{rProduct.price.toLocaleString('en-US')} MMK</p>

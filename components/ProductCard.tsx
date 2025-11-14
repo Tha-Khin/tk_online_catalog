@@ -6,8 +6,8 @@ const ProductCard = ({product} : {product: Product}) => {
   const primaryImage = product.imageUrls && product.imageUrls.length > 0 ? product.imageUrls[0] : null;
   return (
     <Link href={`/${product.id}`} className="group relative flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white">
-      <div className="overflow-hidden">
-        {primaryImage && <Image className="transition-transform duration-300 group-hover:scale-105" alt='product-image' src={primaryImage} width={400} height={400} priority/>}
+      <div className="relative aspect-3/2 overflow-hidden">
+        {primaryImage && <Image className="transition-transform duration-300 group-hover:scale-105 object-cover" alt='product-image' src={primaryImage} fill sizes="600px" priority/>}
       </div>
       <div className="flex flex-1 flex-col justify-between p-2 md:p-4 space-y-2">
         <div>
