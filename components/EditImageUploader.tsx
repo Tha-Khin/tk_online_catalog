@@ -60,7 +60,7 @@ export default function EditImageUploader({ files, setFiles, max = 5, deleteImag
 
                 {allPreviews.map((url, index) => (
                     <div key={url} className="relative w-24 h-24 border rounded overflow-hidden">
-                        <Image src={url} alt="Preview" fill className="object-cover" />
+                        <Image src={url} alt="Preview" fill sizes="200px" className="object-cover" />
 
                         <button
                             type="button"

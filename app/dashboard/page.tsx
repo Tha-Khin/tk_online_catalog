@@ -11,6 +11,7 @@ import { deleteDoc, doc } from "firebase/firestore";
 import { db } from "@/firebase/firebase";
 import ConfirmModal from "./ConfirmModal";
 import { toast } from "react-toastify";
+import Link from "next/link";
 
 export default function DashboardPage() {
     const { loading } = useAuth();
@@ -96,7 +97,8 @@ export default function DashboardPage() {
                             <tr>
                                 <th className="px-4 py-3 font-semibold truncate">Product</th>
                                 <th className="px-4 py-3 font-semibold truncate">Category</th>
-                                <th className="px-4 pr-40 py-3 font-semibold truncate hidden md:block text-end">Selling Price</th>
+                                <th className="px-4 py-3 font-semibold truncate hidden md:block text-center">Price</th>
+                                <th className="px-4 py-3 font-semibold truncate">View Detail</th>
                                 <th className="px-4 py-3 font-semibold truncate">In Stock</th>
                                 <th className="px-4 py-3 font-semibold truncate">Manage</th>
                             </tr>
@@ -111,7 +113,8 @@ export default function DashboardPage() {
                                         <span className="truncate max-sm:hidden w-full">{product.title}</span>
                                     </td>
                                     <td className="px-4 py-3">{product.category}</td>
-                                    <td className="px-4 pr-40 py-3 max-sm:hidden text-end">{product.price.toLocaleString('en-US')} MMK</td>
+                                    <td className="px-4 py-3 text-center">{product.price.toLocaleString('en-US')} MMK</td>
+                                    <td className="px-4 py-3 mx-auto"><Link href={`/${product.id}`} target="_blank" rel="noopener noreferrer" className="bg-blue-600 text-white px-4 py-2 rounded font-semibold cursor-pointer">View</Link></td>
                                     <td className="px-4 py-3">
                                         <label className="relative inline-flex items-center cursor-pointer text-gray-900 gap-3">
                                             <input type="checkbox" checked={product.isActive} onChange={() => product.id && toggleMutation.mutate(product.id)} disabled={toggleMutation.isPending} className="sr-only peer" />

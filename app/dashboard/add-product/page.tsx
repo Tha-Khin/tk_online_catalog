@@ -13,6 +13,7 @@ import { assets } from "@/assets/assets";
 const initialState: Omit<Product, "id"> = {
     title: "",
     description: "",
+    shortDesc: "",
     category: "",
     price: 0,
     imageUrls: [],
@@ -55,7 +56,7 @@ export default function AddProduct() {
             return setError("Please upload at least 1 image.");
         }
 
-        if (!formData.title.trim() || !formData.description.trim() || !formData.category.trim()) {
+        if (!formData.title.trim() || !formData.shortDesc.trim() || !formData.description.trim() || !formData.category.trim()) {
             return setError("All form fields are required.");
         }
 
@@ -96,6 +97,10 @@ export default function AddProduct() {
                 <div className="flex flex-col gap-1 max-w-md mt-4">
                     <label className="text-base font-medium">Product Name</label>
                     <input name="title" value={formData.title} onChange={handleChange} className="border px-3 py-2 rounded" placeholder="Enter product name" required/>
+                </div>
+                <div className="flex flex-col gap-1 max-w-md mt-4">
+                    <label className="text-base font-medium">Product Short Description</label>
+                    <input name="shortDesc" value={formData.shortDesc} onChange={handleChange} className="border px-3 py-2 rounded" placeholder="Enter product short description" required/>
                 </div>
                 <div className="flex flex-col gap-1 max-w-md mt-4">
                     <label className="text-base font-medium">Description</label>

@@ -15,10 +15,10 @@ export async function POST(request: Request) {
     const buffer = Buffer.from(bytes);
 
     // Upload to Cloudinary
-    // We must use upload_stream and a Promise to handle the buffer
+    // Use upload_stream and a Promise to handle the buffer
     const secure_url = await new Promise<string>((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
-        { folder: 'tk-online-catalog' }, // Optional: specify a folder
+        { folder: 'tk-online-catalog' }, // specify a folder
         (error, result) => {
           if (error) {
             return reject(error);

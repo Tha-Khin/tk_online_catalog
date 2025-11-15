@@ -29,7 +29,7 @@ const ProductDetail = ({id}: ProductIdProps) => {
                 <div className="grid grid-cols-5 gap-3">
                     {product.imageUrls.map((image, index) => (
                         <div key={index} className="relative aspect-3/2 overflow-hidden">
-                            <Image onClick={() => setSelectedImage(image)} src={image} alt={`product-image-${index}`} fill sizes="600px" className="w-full rounded-lg border-2 border-primary object-cover cursor-pointer"/>
+                            <Image onClick={() => setSelectedImage(image)} src={image} alt={`product-image-${index}`} fill sizes="600px" loading="eager" className="w-full rounded-lg border-2 border-primary object-cover cursor-pointer"/>
                         </div>
                     ))}
                 </div>
@@ -38,11 +38,11 @@ const ProductDetail = ({id}: ProductIdProps) => {
             <div className="mt-8">
                 <h1 className="text-[#181711] text-4xl font-black leading-tight tracking-[-0.033em]">{product.title} <span className="text-[#898361] text-sm">({product.category})</span></h1>
                 <p className="text-[#898361] text-lg font-normal leading-normal mt-2">
-                    Experience unparalleled comfort and performance with our latest model, designed for both casual joggers and marathon runners.
+                    {product.shortDesc}
                 </p>
                 <p className="text-3xl font-bold mt-4 text-[#181711]">{product.price.toLocaleString('en-US')} MMK</p>
                 <button className="w-full sm:w-auto grow flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-8 bg-primary text-[#181711] text-base font-bold leading-normal tracking-[0.015em] mt-2 sm:mt-5">
-                    <span className="truncate">Buy Now</span>
+                    <Link href="https://www.facebook.com/thakhinwebservice" target="_blank" rel="noopener noreferrer">Buy Now</Link>
                 </button>
                 {/* Detailed Info Tabs */}
                 <div className="mt-10 border-t border-[#f4f4f0] pt-6">

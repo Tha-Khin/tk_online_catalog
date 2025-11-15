@@ -104,6 +104,10 @@ export default function EditModal({ product, close, onUpdateSuccess }: EditModal
                         <input name="title" id="product-name" type="text" value={formData.title} onChange={handleFormChange} placeholder="Type here" className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40" required />
                     </div>
                     <div className="flex flex-col gap-1 max-w-md">
+                        <label className="text-base font-medium" htmlFor="product-short-description">Product Short Description</label>
+                        <input name="shortDesc" id="product-short-description" type="text" value={formData.shortDesc} onChange={handleFormChange} placeholder="Type here" className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40" required />
+                    </div>
+                    <div className="flex flex-col gap-1 max-w-md">
                         <label className="text-base font-medium" htmlFor="product-description">Product Description</label>
                         <textarea name="description" id="product-description" value={formData.description} onChange={handleFormChange} rows={4} className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40 resize-none" placeholder="Type here"></textarea>
                     </div>
